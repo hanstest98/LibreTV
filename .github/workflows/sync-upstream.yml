@@ -5,9 +5,9 @@ on:
     - cron: "0 3 * * *"
   workflow_dispatch:
 
-permissions:
+permissions:  # ✅ 必须在 jobs 同级
   contents: write
-  workflows: write   # ✅ 允许修改 workflow 文件
+  workflows: write
 
 jobs:
   sync:
@@ -17,9 +17,15 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Add upstream
+      - name: Add upstream and fetch
         run: |
-          git remote add upstream https://github.com/LibreSpark/LibreTV.git
+          git remote add upstream https://github.com/LibreSpark/LibreTV.git || echo "Upstream exists"
           git fetch upstream
+
+      - name: Merge upstream
+        run: |
+          git checkout main
           git merge upstream/main --allow-unrelated-histories -m "🔄 Sync from upstream"
-          git push origin main
+
+      - name: Push changes
+        run: git push origin main
