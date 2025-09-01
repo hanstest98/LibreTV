@@ -1,36 +1,43 @@
 name: Sync Upstream Code Only
 
 on:
-  workflow_dispatch:      
-  schedule:               
-    - cron: "0 3 * * *"  
+  workflow_dispatch:      # 手动触发
+  schedule:               # 定时触发
+    - cron: "0 3 * * *"  # 每天 3 点 UTC 时间
 
 permissions:
-  contents: write        
+  contents: write         # 只允许修改代码文件，不涉及 workflow
 
 jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
+      # 1️⃣ Checkout 仓库
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      # 2️⃣ 添加 upstream 并抓取更新
       - name: Add upstream
         run: |
           git remote add upstream https://github.com/LibreSpark/LibreTV.git || echo "Upstream exists"
           git fetch upstream
 
+      # 3️⃣ 配置 Git 提交者身份
       - name: Set Git identity
         run: |
           git config --global user.name "GitHub Action"
           git config --global user.email "action@github.com"
 
+      # 4️⃣ 合并 upstream 代码（不触碰 workflow 文件）
       - name: Merge upstream
         run: |
           git checkout main
           git merge upstream/main --allow-unrelated-histories -m "🔄 Sync from upstream"
+          # 撤销对 workflow 文件的任何修改
+          git checkout -- .github/workflows/*.yml
 
+      # 5️⃣ 推送代码到 fork 仓库
       - name: Push changes
         run: git push origin main
