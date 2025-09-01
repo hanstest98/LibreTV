@@ -5,7 +5,7 @@ on:
     - cron: "0 3 * * *"
   workflow_dispatch:
 
-permissions:  # ✅ 必须在 jobs 同级
+permissions:  # ✅ 顶层
   contents: write
   workflows: write
 
@@ -13,11 +13,12 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Add upstream and fetch
+      - name: Add upstream
         run: |
           git remote add upstream https://github.com/LibreSpark/LibreTV.git || echo "Upstream exists"
           git fetch upstream
